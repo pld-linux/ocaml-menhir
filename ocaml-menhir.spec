@@ -11,11 +11,12 @@
 Summary:	LR(1) parser generator for the OCaml programming language
 Name:		ocaml-%{module}
 Version:	20170509
-Release:	1
+Release:	2
 License:	GPL v2
 Group:		Libraries
 Source0:	http://gallium.inria.fr/~fpottier/menhir/%{module}-%{version}.tar.gz
 # Source0-md5:	b8ba18b5abda831cf41cd4fa65f4c51b
+Patch0:		destdir.patch
 URL:		http://gallium.inria.fr/~fpottier/menhir/
 BuildRequires:	ocaml >= 3.04-7
 BuildRequires:	ocaml-ocamlbuild
@@ -56,6 +57,7 @@ menhir.
 
 %prep
 %setup -q -n %{module}-%{version}
+%patch0 -p1
 
 %build
 %{__make} PREFIX=%{_prefix} USE_OCAMLFIND=true all

@@ -1,0 +1,38 @@
+--- menhir-20170509/Makefile~	2017-05-09 21:26:09.000000000 +0200
++++ menhir-20170509/Makefile	2017-06-06 19:09:55.839985076 +0200
+@@ -178,11 +178,11 @@
+ 
+ install:
+ # Install the executable.
+-	mkdir -p $(bindir)
+-	install $(BUILDDIR)/menhir.$(TARGET) $(bindir)/$(MENHIREXE)
++	mkdir -p $(DESTDIR)$(bindir)
++	install $(BUILDDIR)/menhir.$(TARGET) $(DESTDIR)$(bindir)/$(MENHIREXE)
+ # Install Menhir's standard library.
+-	mkdir -p $(libdir)
+-	install -m 644 $(MLYLIB) $(libdir)
++	mkdir -p $(DESTDIR)$(libdir)
++	install -m 644 $(MLYLIB) $(DESTDIR)$(libdir)
+ # Install MenhirLib and MenhirSdk.
+ 	@if `$(BUILDDIR)/menhir.$(TARGET) --suggest-ocamlfind | tr -d '\r'` ; then \
+ 	  echo 'Installing MenhirLib and MenhirSdk via ocamlfind.' ; \
+@@ -193,14 +193,14 @@
+ 	  rm -f META ; \
+ 	else \
+ 	  echo 'Installing MenhirLib and MenhirSdk manually.' ; \
+-	  install -m 644 $(patsubst %,$(BUILDDIR)/%,$(MENHIRLIB)) $(libdir) ; \
+-	  install -m 644 $(patsubst %,$(SDKDIR)/%,$(MENHIRSDK)) $(libdir) ; \
++	  install -m 644 $(patsubst %,$(BUILDDIR)/%,$(MENHIRLIB)) $(DESTDIR)$(libdir) ; \
++	  install -m 644 $(patsubst %,$(SDKDIR)/%,$(MENHIRSDK)) $(DESTDIR)$(libdir) ; \
+ 	fi
+ # Install the documentation, if it has been built.
+ 	if [ -f manual.pdf ] ; then \
+-	  mkdir -p $(docdir) $(mandir) && \
+-	  cp -r $(DOCS) $(docdir) && \
+-	  cp -r $(MANS) $(mandir) ; \
++	  mkdir -p $(DESTDIR)$(docdir) $(DESTDIR)$(mandir) && \
++	  cp -r $(DOCS) $(DESTDIR)$(docdir) && \
++	  cp -r $(MANS) $(DESTDIR)$(mandir) ; \
+ 	fi
+ 
+ uninstall:
