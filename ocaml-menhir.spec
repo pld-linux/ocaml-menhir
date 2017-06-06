@@ -8,17 +8,17 @@
 %endif
 
 %define		module	menhir
-Summary:	%{module} binding for OCaml
-Summary(pl.UTF-8):	Wiązania %{module} dla OCamla
+Summary:	LR(1) parser generator for the OCaml programming language
 Name:		ocaml-%{module}
 Version:	20170509
-Release:	0.1
-License:	GPLv2
+Release:	1
+License:	GPL v2
 Group:		Libraries
 Source0:	http://gallium.inria.fr/~fpottier/menhir/%{module}-%{version}.tar.gz
 # Source0-md5:	b8ba18b5abda831cf41cd4fa65f4c51b
 URL:		http://gallium.inria.fr/~fpottier/menhir/
 BuildRequires:	ocaml >= 3.04-7
+BuildRequires:	ocaml-ocamlbuild
 %requires_eq	ocaml-runtime
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -30,27 +30,29 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %endif
 
 %description
-This package contains files needed to run bytecode executables using
-TEMPLATE library.
+Menhir is a LR(1) parser generator for the OCaml programming language.
+That is, Menhir compiles LR(1) grammar specifications down to OCaml
+code.
 
-%description -l pl.UTF-8
-Pakiet ten zawiera binaria potrzebne do uruchamiania programów
-używających biblioteki TEMPLATE.
+Menhir is 90% compatible with ocamlyacc. Legacy ocamlyacc grammar
+specifications are accepted and compiled by Menhir. The resulting
+parsers run and produce correct parse trees. However, parsers that
+explicitly invoke functions in module Parsing behave slightly
+incorrectly. For instance, the functions that provide access to
+positions return a dummy position when invoked by a Menhir parser.
+Porting a grammar specification from ocamlyacc to Menhir requires
+replacing all calls to module Parsing with new Menhir-specific
+keywords.
 
 %package devel
-Summary:	TEMPLATE binding for OCaml - development part
-Summary(pl.UTF-8):	Wiązania TEMPLATE dla OCamla - cześć programistyczna
+Summary:	Menhir development part
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
-%requires_eq	ocaml
+%requires_eq ocaml
 
 %description devel
 This package contains files needed to develop OCaml programs using
-TEMPLATE library.
-
-%description devel -l pl.UTF-8
-Pakiet ten zawiera pliki niezbędne do tworzenia programów używających
-biblioteki TEMPLATE.
+menhir.
 
 %prep
 %setup -q -n %{module}-%{version}
@@ -67,11 +69,17 @@ install -d $OCAMLFIND_DESTDIR $OCAMLFIND_DESTDIR/stublibs
 	DESTDIR=$RPM_BUILD_ROOT
 
 # move to dir pld ocamlfind looks
-install -d $RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/%{module}
-mv $OCAMLFIND_DESTDIR/%{module}/META \
-	$RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/%{module}
-cat <<EOF >> $RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/%{module}/META
-directory="+%{module}"
+install -d $RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/menhir{Lib,Sdk}
+mv $OCAMLFIND_DESTDIR/menhirLib/META \
+	$RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/menhirLib
+cat <<EOF >> $RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/menhirLib/META
+directory="+menhirLib"
+EOF
+
+mv $OCAMLFIND_DESTDIR/menhirSdk/META \
+	$RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/menhirSdk
+cat <<EOF >> $RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/menhirSdk/META
+directory="+menhirSdk"
 EOF
 
 %clean
@@ -79,23 +87,22 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/ocaml/stublibs/*.so
-%dir %{_libdir}/ocaml/%{module}
-%{_libdir}/ocaml/%{module}/*.cma
-%if %{with ocaml_opt}
-%attr(755,root,root) %{_libdir}/ocaml/%{module}/*.cmxs
-%endif
+%doc manual.pdf
+%attr(755,root,root) %{_bindir}/menhir
+%dir %{_libdir}/ocaml/%{module}*
+%dir %{_datadir}/menhir
+%{_datadir}/menhir/standard.mly
+%{_mandir}/man1/menhir.1*
 
 %files devel
 %defattr(644,root,root,755)
 %doc LICENSE
-%{_libdir}/ocaml/%{module}/*.cmi
-%{_libdir}/ocaml/%{module}/*.cmo
-%{_libdir}/ocaml/%{module}/*.mli
+%{_libdir}/ocaml/menhirLib/menhirLib.ml
+%{_libdir}/ocaml/%{module}*/*.cmi
+%{_libdir}/ocaml/%{module}*/*.cmo
+%{_libdir}/ocaml/%{module}*/*.mli
 %if %{with ocaml_opt}
-%{_libdir}/ocaml/%{module}/*.[ao]
-%{_libdir}/ocaml/%{module}/*.cmx
-%{_libdir}/ocaml/%{module}/*.cmxa
+%{_libdir}/ocaml/%{module}*/*.[ao]
+%{_libdir}/ocaml/%{module}*/*.cmx
 %endif
-%{_libdir}/ocaml/site-lib/%{module}
-%{_examplesdir}/%{name}-%{version}
+%{_libdir}/ocaml/site-lib/%{module}*
