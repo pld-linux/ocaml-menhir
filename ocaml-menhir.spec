@@ -60,13 +60,17 @@ menhir.
 %patch0 -p1
 
 %build
-%{__make} PREFIX=%{_prefix} USE_OCAMLFIND=true all
+%{__make} all \
+	%{!?with_ocaml_opt:TARGET=byte} \
+	PREFIX=%{_prefix} \
+	USE_OCAMLFIND=true
 
 %install
 rm -rf $RPM_BUILD_ROOT
 export OCAMLFIND_DESTDIR=$RPM_BUILD_ROOT%{_libdir}/ocaml
 install -d $OCAMLFIND_DESTDIR $OCAMLFIND_DESTDIR/stublibs
 %{__make} install \
+	%{!?with_ocaml_opt:TARGET=byte} \
 	PREFIX=%{_prefix} \
 	DESTDIR=$RPM_BUILD_ROOT
 
