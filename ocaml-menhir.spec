@@ -11,7 +11,7 @@
 Summary:	LR(1) parser generator for the OCaml programming language
 Name:		ocaml-%{module}
 Version:	20170509
-Release:	2
+Release:	3
 License:	GPL v2
 Group:		Libraries
 Source0:	http://gallium.inria.fr/~fpottier/menhir/%{module}-%{version}.tar.gz
@@ -19,7 +19,7 @@ Source0:	http://gallium.inria.fr/~fpottier/menhir/%{module}-%{version}.tar.gz
 Patch0:		destdir.patch
 URL:		http://gallium.inria.fr/~fpottier/menhir/
 BuildRequires:	ocaml >= 3.04-7
-BuildRequires:	ocaml-ocamlbuild
+BuildRequires:	ocaml-findlib
 %requires_eq	ocaml-runtime
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
