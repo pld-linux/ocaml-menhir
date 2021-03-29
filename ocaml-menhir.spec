@@ -1,34 +1,33 @@
 #
 # Conditional build:
 %bcond_without	ocaml_opt	# skip building native optimized binaries (bytecode is always built)
+%bcond_without	coq		# 
 
 # not yet available on x32 (ocaml 4.02.1), update when upstream will support it
 %ifnarch %{ix86} %{x8664} arm aarch64 ppc sparc sparcv9
 %undefine	with_ocaml_opt
+%undefine	with_coq
+%endif
+
+%if %{without ocaml_opt}
+%define		_enable_debug_packages	0
 %endif
 
 %define		module	menhir
 Summary:	LR(1) parser generator for the OCaml programming language
 Name:		ocaml-%{module}
-Version:	20170509
-Release:	3
+Version:	20210310
+Release:	1
 License:	GPL v2
 Group:		Libraries
-Source0:	http://gallium.inria.fr/~fpottier/menhir/%{module}-%{version}.tar.gz
-# Source0-md5:	b8ba18b5abda831cf41cd4fa65f4c51b
-Patch0:		destdir.patch
+Source0:	https://gitlab.inria.fr/fpottier/menhir/-/archive/%{version}/menhir-%{version}.tar.bz2
+# Source0-md5:	1a0388baec7a5ba7c931e074d2c322d7
 URL:		http://gallium.inria.fr/~fpottier/menhir/
+%{?with_coq:BuildRequires:	coq}
 BuildRequires:	ocaml >= 3.04-7
-BuildRequires:	ocaml-findlib
+BuildRequires:	ocaml-dune
 %requires_eq	ocaml-runtime
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
-
-%define		debug_package	%{nil}
-%if %{without ocaml_opt}
-%define		no_install_post_strip	1
-# no opt means no native binary, stripping bytecode breaks such programs
-%define		_enable_debug_packages	0
-%endif
 
 %description
 Menhir is a LR(1) parser generator for the OCaml programming language.
@@ -55,60 +54,76 @@ Requires:	%{name} = %{version}-%{release}
 This package contains files needed to develop OCaml programs using
 menhir.
 
+%package -n coq-menhirlib
+Summary:	Support library for verified Coq parsers produced by Menhir
+License:	LGPLv3+
+Requires:	coq
+
+%description -n coq-menhirlib
+The Menhir parser generator, in --coq mode, can produce Coq parsers.
+These parsers must be linked against this library, which provides both
+an interpreter (which allows running the generated parser) and a
+validator (which allows verifying, at parser construction time, that
+the generated parser is correct and complete with respect to the
+grammar).
+
 %prep
 %setup -q -n %{module}-%{version}
-%patch0 -p1
 
 %build
-%{__make} all \
-	%{!?with_ocaml_opt:TARGET=byte} \
-	PREFIX=%{_prefix} \
-	USE_OCAMLFIND=true
+dune build --verbose %{?_smp_mflags}
+
+%if %{with coq}
+%{__make} -C coq-menhirlib
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
-export OCAMLFIND_DESTDIR=$RPM_BUILD_ROOT%{_libdir}/ocaml
-install -d $OCAMLFIND_DESTDIR $OCAMLFIND_DESTDIR/stublibs
-%{__make} install \
-	%{!?with_ocaml_opt:TARGET=byte} \
-	PREFIX=%{_prefix} \
+
+dune install \
+	--verbose \
+	--destdir=$RPM_BUILD_ROOT
+
+%if %{with coq}
+%{__make} -C coq-menhirlib install \
 	DESTDIR=$RPM_BUILD_ROOT
-
-# move to dir pld ocamlfind looks
-install -d $RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/menhir{Lib,Sdk}
-mv $OCAMLFIND_DESTDIR/menhirLib/META \
-	$RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/menhirLib
-cat <<EOF >> $RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/menhirLib/META
-directory="+menhirLib"
-EOF
-
-mv $OCAMLFIND_DESTDIR/menhirSdk/META \
-	$RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/menhirSdk
-cat <<EOF >> $RPM_BUILD_ROOT%{_libdir}/ocaml/site-lib/menhirSdk/META
-directory="+menhirSdk"
-EOF
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc manual.pdf
+%doc doc/manual.pdf
 %attr(755,root,root) %{_bindir}/menhir
 %dir %{_libdir}/ocaml/%{module}*
-%dir %{_datadir}/menhir
-%{_datadir}/menhir/standard.mly
+%{_libdir}/ocaml/%{module}*/*.cma
+%if %{with ocaml_opt}
+%attr(755,root,root) %{_libdir}/ocaml/%{module}*/*.cmxs
+%endif
+%{_libdir}/ocaml/%{module}*/META
 %{_mandir}/man1/menhir.1*
 
 %files devel
 %defattr(644,root,root,755)
 %doc LICENSE
-%{_libdir}/ocaml/menhirLib/menhirLib.ml
 %{_libdir}/ocaml/%{module}*/*.cmi
-%{_libdir}/ocaml/%{module}*/*.cmo
+%{_libdir}/ocaml/%{module}*/*.cmt
+%{_libdir}/ocaml/%{module}*/*.cmti
 %{_libdir}/ocaml/%{module}*/*.mli
 %if %{with ocaml_opt}
 %{_libdir}/ocaml/%{module}*/*.[ao]
 %{_libdir}/ocaml/%{module}*/*.cmx
+%{_libdir}/ocaml/%{module}*/*.cmxa
 %endif
-%{_libdir}/ocaml/site-lib/%{module}*
+%{_libdir}/ocaml/%{module}*/dune-package
+
+%if %{with coq}
+%files -n coq-menhirlib
+%defattr(644,root,root,755)
+%doc coq-menhirlib/CHANGES.md coq-menhirlib/README.md
+%dir %{_libdir}/ocaml/coq-menhirlib
+%{_libdir}/ocaml/coq-menhirlib/META
+%{_libdir}/ocaml/coq-menhirlib/dune-package
+%{_libdir}/coq/user-contrib/MenhirLib
+%endif
