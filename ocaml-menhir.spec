@@ -17,7 +17,7 @@
 Summary:	LR(1) parser generator for the OCaml programming language
 Name:		ocaml-%{module}
 Version:	20210310
-Release:	1
+Release:	2
 License:	GPL v2
 Group:		Libraries
 Source0:	https://gitlab.inria.fr/fpottier/menhir/-/archive/%{version}/menhir-%{version}.tar.bz2
