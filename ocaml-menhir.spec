@@ -15,6 +15,7 @@
 
 %define		module	menhir
 Summary:	LR(1) parser generator for the OCaml programming language
+Summary(pl.UTF-8):	Generator parserów LR(1) dla języka programowania OCaml
 Name:		ocaml-%{module}
 Version:	20210310
 Release:	2
@@ -44,18 +45,39 @@ Porting a grammar specification from ocamlyacc to Menhir requires
 replacing all calls to module Parsing with new Menhir-specific
 keywords.
 
+%description -l pl.UTF-8
+Menhir to generator parserów LR(1) dla języka programownia OCaml.
+Oznacza to, że Menhir kompiluje specyfikacje gramatyk LR(1) do kodu w
+OCamlu.
+
+Menhir jest w 90% zgodny z ocamlyacc. Tradycyjne specyfikacje gramatyk
+ocamlyacca są akceptowane i kompilowane przez Menhira. Wynikowe
+parsery działają i tworzą poprawne drzewa analizy - jednak parsery
+jawnie wywołujące funkcje z modułu Parsing zachowują się nie do końca
+popeawnie. Na przykład funkcje dające dostęp do pozycji w przypadku
+wywołania z parsera Menhir zwracają pozycję pustą. Przekładanie
+specyfikacji gramatyki z ocamlyacca na Menhira wymaga zastąpienia
+wszystkich wywołań modułu Parsing nowymi słowami kluczowymi
+specyficznymi dla modułu Menhir.
+
 %package devel
-Summary:	Menhir development part
+Summary:	Development part of OCaml Menhir library
+Summary(pl.UTF-8):	Programistyczna część biblioteki OCamla Menhir
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 %requires_eq	ocaml
 
 %description devel
 This package contains files needed to develop OCaml programs using
-menhir.
+menhir library.
+
+%description devel
+Ten pakiet zawiera pliki potrzebne do tworzenia programów w OCamlu
+używających biblioteki menhir.
 
 %package -n coq-menhirlib
 Summary:	Support library for verified Coq parsers produced by Menhir
+Summary(pl.UTF-8):	Biblioteka wspierająca dla wygenerowanych przez Menhira parserów weryfikowanych przez Coq
 License:	LGPL v3+
 Requires:	coq
 
@@ -66,6 +88,14 @@ an interpreter (which allows running the generated parser) and a
 validator (which allows verifying, at parser construction time, that
 the generated parser is correct and complete with respect to the
 grammar).
+
+%description -n coq-menhirlib -l pl.UTF-8
+Generator parserów Menhir w trybie --coq potrafi tworzyć parsery Coq.
+Parsery te muszą być konsolidowane z tą biblioteką, zapewniającą
+zarówno interpreter (pozwalający uruchamiać wygenerowane parsery), jak
+i walidator (pozwalający na weryfikowanie w trakcie konstruowania
+parsera, czy wygenerowany parser jest poprawny i kompletny względem
+gramatyki).
 
 %prep
 %setup -q -n %{module}-%{version}
