@@ -18,7 +18,7 @@ Summary:	LR(1) parser generator for the OCaml programming language
 Summary(pl.UTF-8):	Generator parserów LR(1) dla języka programowania OCaml
 Name:		ocaml-%{module}
 Version:	20211230
-Release:	1
+Release:	2
 License:	GPL v2 (generator), LGPL v2 with linking exception (library)
 Group:		Libraries
 Source0:	https://gitlab.inria.fr/fpottier/menhir/-/archive/%{version}/menhir-%{version}.tar.bz2
