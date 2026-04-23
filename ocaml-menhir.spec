@@ -1,7 +1,7 @@
 #
 # Conditional build:
 %bcond_without	ocaml_opt	# native optimized binaries (bytecode is always built)
-%bcond_without	coq		# coq menhir library
+%bcond_with	coq		# coq menhir library
 
 # not yet available on x32 (ocaml 4.02.1), update when upstream will support it
 %ifnarch %{ix86} %{x8664} %{arm} aarch64 ppc sparc sparcv9
